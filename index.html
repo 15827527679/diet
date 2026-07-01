@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>甜富婆 & 老舒 · 减肥体重记录（GitHub 联网版）</title>
+<style>
+  :root{
+    --pink:#ec4899; --blue:#3b82f6;
+    --pink-soft:#fdf2f8; --blue-soft:#eff6ff;
+    --bg1:#fff1f7; --bg2:#f0f6ff; --card:#ffffff;
+    --text:#1f2937; --muted:#6b7280; --line:#e5e7eb;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;color:var(--text);bac斤round:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 100%);bac斤round-attachment:fixed;min-height:100vh;line-height:1.5;}
+  .container{max-width:1000px;margin:0 auto;padding:20px 16px 60px;}
+  header{text-align:center;padding:18px 0 8px;}
+  header h1{margin:0;font-size:26px;font-weight:800;letter-spacing:.5px;bac斤round:linear-gradient(90deg,var(--pink),var(--blue));-webkit-bac斤round-clip:text;bac斤round-clip:text;color:transparent;}
+  header .sub{color:var(--muted);margin-top:6px;font-size:14px;}
+  header .datebar{display:inline-flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px;font-size:13px;}
+  header .pill{bac斤round:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 12px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  header .pill b{color:var(--text);}
+  .statusbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px;font-size:13px;}
+  .who-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-weight:700;color:#fff;}
+  .who-badge.pink{bac斤round:var(--pink);} .who-badge.blue{bac斤round:var(--blue);}
+  .sync{color:var(--muted);} .sync.err{color:#dc2626;} .sync.ok{color:#16a34a;}
+  .iconbtn{bac斤round:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;color:var(--text);}
+  .iconbtn:active{transform:translateY(1px);}
+  .card{bac斤round:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.05);padding:18px;margin-top:18px;}
+  .card h2{margin:0 0 14px;font-size:17px;display:flex;align-items:center;gap:8px;}
+  .card h2 .dot{width:10px;height:10px;border-radius:50%;display:inline-block;}
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  .stat-box{border:1px solid var(--line);border-radius:12px;padding:14px;bac斤round:#fcfcfd;}
+  .stat-box .who{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;}
+  .stat-box.pink{bac斤round:var(--pink-soft);border-color:#fbcfe8;}
+  .stat-box.blue{bac斤round:var(--blue-soft);border-color:#bfdbfe;}
+  .stat-row{display:flex;justify-content:space-between;font-size:13px;margin-top:8px;color:var(--muted);}
+  .stat-row b{color:var(--text);font-size:15px;}
+  .stat-row .delta-down{color:#16a34a;font-weight:700;} .stat-row .delta-up{color:#dc2626;font-weight:700;}
+  .progress-wrap{height:6px;bac斤round:#fff;border-radius:999px;margin-top:10px;overflow:hidden;border:1px solid var(--line);}
+  .progress-bar{height:100%;width:0;border-radius:999px;transition:width .4s;}
+  .progress-bar.pink{bac斤round:var(--pink);} .progress-bar.blue{bac斤round:var(--blue);}
+  #chart{width:100%;height:auto;display:block;overflow:visible;}
+  .chart-legend{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:6px;font-size:13px;}
+  .chart-legend span{display:inline-flex;align-items:center;gap:6px;}
+  .chart-legend i{width:18px;height:3px;border-radius:2px;display:inline-block;}
+  #tooltip{position:fixed;pointer-events:none;bac斤round:rgba(31,41,55,.92);color:#fff;padding:6px 10px;border-radius:8px;font-size:12px;display:none;z-index:50;transform:translate(-50%,-120%);white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2);}
+  .input-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:12px;}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:600;}
+  .field.me label{font-weight:800;}
+  .field input{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;outline:none;transition:border-color .15s;bac斤round:#fff;}
+  .field.pink.me input{border-color:var(--pink);bac斤round:var(--pink-soft);}
+  .field.blue.me input{border-color:var(--blue);bac斤round:var(--blue-soft);}
+  .actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+  button{cursor:pointer;border:none;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;transition:transform .1s,opacity .15s;}
+  button:active{transform:translateY(1px);}
+  button:disabled{opacity:.55;cursor:wait;}
+  .btn-primary{bac斤round:linear-gradient(90deg,var(--pink),#f472b6);color:#fff;box-shadow:0 3px 10px rgba(236,72,153,.3);}
+  .btn-ghost{bac斤round:#fff;color:var(--text);border:1px solid var(--line);}
+  .btn-today{bac斤round:var(--blue-soft);color:var(--blue);border:1px solid #bfdbfe;}
+  .btn-danger{bac斤round:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
+  .btn-sm{padding:5px 10px;font-size:12px;border-radius:8px;}
+  .hint{font-size:12px;color:var(--muted);margin-top:10px;}
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:14px;min-width:420px;}
+  thead th{text-align:left;padding:10px 12px;bac斤round:#f9fafb;border-bottom:2px solid var(--line);font-size:12px;color:var(--muted);font-weight:700;white-space:nowrap;}
+  tbody td{padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  tbody tr:hover{bac斤round:#fafbfc;}
+  .num-pink{color:var(--pink);font-weight:700;} .num-blue{color:var(--blue);font-weight:700;} .num-empty{color:#d1d5db;}
+  .empty-row{text-align:center;color:var(--muted);padding:24px;}
+  .target-row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;}
+  .target-row .field{flex:1;min-width:140px;}
+  .mgmt{display:flex;gap:10px;flex-wrap:wrap;}
+  .mask{position:fixed;inset:0;bac斤round:rgba(17,24,39,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:100;}
+  .mask .panel{bac斤round:#fff;border-radius:18px;padding:26px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+  .mask h3{margin:0 0 6px;font-size:19px;}
+  .mask p{color:var(--muted);font-size:13px;margin:0 0 16px;}
+  .who-pick{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;}
+  .who-card{border:2px solid var(--line);border-radius:14px;padding:20px 12px;text-align:center;cursor:pointer;font-weight:700;font-size:16px;transition:transform .1s,border-color .15s;bac斤round:#fff;}
+  .who-card:active{transform:translateY(2px);}
+  .who-card.pink:hover{border-color:var(--pink);bac斤round:var(--pink-soft);}
+  .who-card.blue:hover{border-color:var(--blue);bac斤round:var(--blue-soft);}
+  .who-card .em{font-size:30px;display:block;margin-bottom:6px;}
+  .cfg-field{margin-bottom:12px;}
+  .cfg-field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:600;}
+  .cfg-field input{width:100%;padding:10px;border:1.5px solid var(--line);border-radius:10px;font-size:14px;font-family:monospace;}
+  @media(max-width:640px){ .input-grid{grid-template-columns:1fr;} .stats{grid-template-columns:1fr;} header h1{font-size:21px;} }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>甜富婆 & 老舒 · 减肥打卡</h1>
+    <div class="sub">手机各自填，GitHub 云端同步 🔄</div>
+    <div class="datebar">
+      <span class="pill">📅 <b>2026-07-01</b> ～ <b>2026-10-31</b></span>
+      <span class="pill">共 <b>123</b> 天</span>
+      <span class="pill" id="pillProgress">第 <b>1</b> 天 · 剩余 <b>122</b> 天</span>
+    </div>
+    <div class="statusbar">
+      <span class="who-badge" id="whoBadge">—</span>
+      <button class="iconbtn" onclick="switchWho()">切换身份</button>
+      <span class="sync" id="syncTxt">正在连接云端…</span>
+      <button class="iconbtn" onclick="refresh(false)">🔄 刷新</button>
+      <button class="iconbtn" onclick="openCfg()">⚙️ 配置</button>
+    </div>
+  </header>
+
+  <div class="card">
+    <h2>📊 减重进度</h2>
+    <div class="stats">
+      <div class="stat-box pink">
+        <div class="who"><span class="dot" style="bac斤round:var(--pink)"></span> 甜富婆</div>
+        <div class="stat-row"><span>起始体重</span><b id="s-pink-start">—</b></div>
+        <div class="stat-row"><span>当前体重</span><b id="s-pink-now">—</b></div>
+        <div class="stat-row"><span>已减重</span><b id="s-pink-delta">—</b></div>
+        <div class="progress-wrap"><div class="progress-bar pink" id="bar-pink"></div></div>
+      </div>
+      <div class="stat-box blue">
+        <div class="who"><span class="dot" style="bac斤round:var(--blue)"></span> 老舒</div>
+        <div class="stat-row"><span>起始体重</span><b id="s-blue-start">—</b></div>
+        <div class="stat-row"><span>当前体重</span><b id="s-blue-now">—</b></div>
+        <div class="stat-row"><span>已减重</span><b id="s-blue-delta">—</b></div>
+        <div class="progress-wrap"><div class="progress-bar blue" id="bar-blue"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📈 体重变化折线图</h2>
+    <div class="chart-legend">
+      <span><i style="bac斤round:var(--pink)"></i> 甜富婆</span>
+      <span><i style="bac斤round:var(--blue)"></i> 老舒</span>
+      <span><i style="bac斤round:repeating-linear-gradient(90deg,#9ca3af 0 4px,transparent 4px 8px)"></i> 目标线</span>
+    </div>
+    <svg id="chart" viewBox="0 0 860 400" preserveAspectRatio="xMidYMid meet"></svg>
+    <div id="tooltip"></div>
+  </div>
+
+  <div class="card">
+    <h2>✏️ 录入体重</h2>
+    <div class="input-grid">
+      <div class="field"><label>日期</label><input type="date" id="inDate" min="2026-07-01" max="2026-10-31"></div>
+      <div class="field pink" id="fieldPink"><label>甜富婆 (斤)</label><input type="number" id="inPink" step="0.1" min="40" max="600" placeholder="体重"></div>
+      <div class="field blue" id="fieldBlue"><label>老舒 (斤)</label><input type="number" id="inBlue" step="0.1" min="40" max="600" placeholder="体重"></div>
+    </div>
+    <div class="actions">
+      <button class="btn-primary" id="btnSave">💾 保存到云端</button>
+      <button class="btn-today" id="btnToday">📌 跳到今天</button>
+    </div>
+    <div class="hint">高亮的是「我自己」那一栏，主要填自己的；想帮对方代填也可以。点表格里的「编辑」可回填修改。</div>
+  </div>
+
+  <div class="card">
+    <h2>📋 历史记录</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>日期</th><th>甜富婆 (斤)</th><th>老舒 (斤)</th><th>操作</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🎯 设置目标体重</h2>
+    <div class="target-row">
+      <div class="field pink"><label>甜富婆目标 (斤)</label><input type="number" id="tgtPink" step="0.1" min="40" max="600"></div>
+      <div class="field blue"><label>老舒目标 (斤)</label><input type="number" id="tgtBlue" step="0.1" min="40" max="600"></div>
+      <button class="btn-primary" id="btnSaveTarget">保存目标</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🗄️ 数据备份</h2>
+    <div class="hint" style="margin-top:0;margin-bottom:12px;">数据在 GitHub 仓库的 data.json 里，这里可额外导出一份到本地。</div>
+    <div class="mgmt">
+      <button class="btn-ghost" id="btnExport">⬇️ 导出 JSON</button>
+      <button class="btn-danger" id="btnWipe">🗑️ 清空云端数据</button>
+    </div>
+  </div>
+</div>
+
+<!-- 身份选择 -->
+<div class="mask" id="whoMask" style="display:none">
+  <div class="panel">
+    <h3>你是哪一位？</h3>
+    <p>选一下身份，方便只填自己的体重。两人各选各的即可。</p>
+    <div class="who-pick">
+      <div class="who-card pink" onclick="pickWho('甜富婆')"><span class="em">💖</span>甜富婆</div>
+      <div class="who-card blue" onclick="pickWho('老舒')"><span class="em">💙</span>老舒</div>
+    </div>
+  </div>
+</div>
+
+<!-- GitHub 配置 -->
+<div class="mask" id="cfgMask" style="display:none">
+  <div class="panel">
+    <h3>⚙️ GitHub 配置</h3>
+    <p>填入仓库信息和 Token（仅存在当前手机，不会上传到别处）。</p>
+    <div class="cfg-field"><label>GitHub 用户名 (Owner)</label><input id="cfgOwner"></div>
+    <div class="cfg-field"><label>仓库名 (Repo)</label><input id="cfgRepo" placeholder="如 diet"></div>
+    <div class="cfg-field"><label>Personal Access Token</label><input id="cfgToken" placeholder="github_pat_..."></div>
+    <div class="cfg-field"><label>数据文件名（默认 data.json）</label><input id="cfgPath" placeholder="data.json"></div>
+    <div class="actions" style="margin-top:6px">
+      <button class="btn-primary" onclick="saveCfg()">保存并连接</button>
+      <button class="btn-ghost" onclick="document.getElementById('cfgMask').style.display='none'">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ 配置 ============ */
+/* 可选：在这里预填 owner/repo（公开无妨）。Token 建议用网页内「⚙️配置」填，仅存手机本地。 */
+const CONFIG = {
+  owner: '你的GitHub用户名',
+  repo:  '仓库名',
+  token: '在这里填Token',
+  path:  'data.json',
+  branch:'main'
+};
+const PLAN_START='2026-07-01', PLAN_END='2026-10-31';
+const PEOPLE=['甜富婆','老舒'];
+const COLORS_HEX={'甜富婆':'#ec4899','老舒':'#3b82f6'};
+const TOTAL_DAYS=123;
+function isUnset(v){ return !v || v.includes('你的')||v.includes('在这里')||v.includes('仓库名'); }
+function getCfg(){
+  let ls={}; try{ ls=JSON.parse(localStorage.getItem('gh_cfg')||'{}'); }catch(e){}
+  const pick=k=> !isUnset(ls[k])?ls[k]:(!isUnset(CONFIG[k])?CONFIG[k]:null);
+  return { owner:pick('owner'), repo:pick('repo'), token:pick('token'), path:(ls.path||CONFIG.path||'data.json'), branch:(ls.branch||CONFIG.branch||'main') };
+}
+
+/* ============ Base64（兼容中文） ============ */
+function b64encode(str){ return btoa(Array.from(new TextEncoder().encode(str),b=>String.fromCharCode(b)).join('')); }
+function b64decode(b64){ const bin=atob(b64.replace(/\s/g,'')); const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0)); return new TextDecoder().decode(bytes); }
+
+/* ============ GitHub API ============ */
+class ConflictError extends Error{}
+const GH={
+  headers(){ const c=getCfg(); return {'Authorization':'Bearer '+c.token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}; },
+  async read(){
+    const c=getCfg();
+    if(!c.owner||!c.repo||!c.token) throw new Error('未配置 GitHub');
+    const url=`https://api.github.com/repos/${c.owner}/${c.repo}/contents/${encodeURIComponent(c.path)}?ref=${c.branch}&ts=${Date.now()}`;
+    const r=await fetch(url,{headers:this.headers(),cache:'no-store'});
+    if(r.status===404) return {data:{records:{},targets:{'甜富婆':null,'老舒':null}},sha:null};
+    if(r.status===401||r.status===403) throw new Error('Token 无效或无权限（检查 Token 是否有该仓库 Contents 读写权限）');
+    if(!r.ok) throw new Error('读取失败 '+r.status);
+    const j=await r.json();
+    let data; try{ data=JSON.parse(j.content?b64decode(j.content):'{}'); }catch(e){ data={records:{},targets:{'甜富婆':null,'老舒':null}}; }
+    if(!data.records) data.records={};
+    if(!data.targets) data.targets={'甜富婆':null,'老舒':null};
+    return {data, sha:j.sha};
+  },
+  async write(data,sha){
+    const c=getCfg();
+    const url=`https://api.github.com/repos/${c.owner}/${c.repo}/contents/${encodeURIComponent(c.path)}`;
+    const body={message:'体重更新 '+new Date().toISOString(), content:b64encode(JSON.stringify(data,null,2)), branch:c.branch};
+    if(sha) body.sha=sha;
+    const r=await fetch(url,{method:'PUT',headers:this.headers(),body:JSON.stringify(body)});
+    const j=await r.json().catch(()=>({}));
+    if(r.status===409) throw new ConflictError('conflict');
+    if(!r.ok) throw new Error(j.message||('写入失败 '+r.status));
+    return j.content?j.content.sha:null;
+  }
+};
+/* 读-改-写，冲突自动重试（两人同时改也不互相覆盖） */
+async function commit(mutator){
+  for(let i=0;i<3;i++){
+    const {data,sha}=await GH.read();
+    mutator(data);
+    try{ await GH.write(data,sha); state=data; return; }
+    catch(e){ if(e instanceof ConflictError && i<2) continue; throw e; }
+  }
+}
+
+/* ============ 状态 ============ */
+let state={records:{},targets:{'甜富婆':null,'老舒':null}};
+let who=null;
+
+/* ============ 工具 ============ */
+function iso(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),da=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${da}`;}
+function todayIso(){const d=new Date();d.setHours(0,0,0,0);return iso(d);}
+function parseISO(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+function daysBetween(a,b){return Math.round((parseISO(b)-parseISO(a))/86400000);}
+function fmtDate(s){const[,m,d]=s.split('-');return `${parseInt(m)}月${parseInt(d)}日`;}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function nowTime(){return new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});}
+function setSync(t,err){const e=document.getElementById('syncTxt');e.textContent=t;e.className='sync'+(err?' err':'');}
+
+/* ============ 身份 ============ */
+function getWho(){
+  const p=new URLSearchParams(location.search).get('who');
+  if(PEOPLE.includes(p)){localStorage.setItem('whoami',p);return p;}
+  const s=localStorage.getItem('whoami');
+  return PEOPLE.includes(s)?s:null;
+}
+function applyWho(w){
+  who=w;
+  const b=document.getElementById('whoBadge'); b.textContent='👤 '+w; b.className='who-badge '+(w==='甜富婆'?'pink':'blue');
+  document.getElementById('fieldPink').classList.toggle('me',w==='甜富婆');
+  document.getElementById('fieldBlue').classList.toggle('me',w==='老舒');
+  document.querySelector('#fieldPink label').textContent='甜富婆 (斤)'+(w==='甜富婆'?' · 我':'');
+  document.querySelector('#fieldBlue label').textContent='老舒 (斤)'+(w==='老舒'?' · 我':'');
+  document.getElementById('inPink').placeholder=(w==='甜富婆'?'我的体重':'体重(可选)');
+  document.getElementById('inBlue').placeholder=(w==='老舒'?'我的体重':'体重(可选)');
+}
+function pickWho(w){ localStorage.setItem('whoami',w); document.getElementById('whoMask').style.display='none'; applyWho(w); initInputs(); refresh(false); }
+function switchWho(){ localStorage.removeItem('whoami'); document.getElementById('whoMask').style.display='flex'; }
+
+/* ============ 配置遮罩 ============ */
+function openCfg(){ const c=getCfg(); document.getElementById('cfgOwner').value=(c.owner||''); document.getElementById('cfgRepo').value=(c.repo||''); document.getElementById('cfgToken').value=(c.token||''); document.getElementById('cfgPath').value=(c.path||'data.json'); document.getElementById('cfgMask').style.display='flex'; }
+function saveCfg(){
+  localStorage.setItem('gh_cfg',JSON.stringify({
+    owner:document.getElementById('cfgOwner').value.trim(),
+    repo:document.getElementById('cfgRepo').value.trim(),
+    token:document.getElementById('cfgToken').value.trim(),
+    path:document.getElementById('cfgPath').value.trim()||'data.json'
+  }));
+  document.getElementById('cfgMask').style.display='none'; location.reload();
+}
+
+/* ============ 云端读写 ============ */
+async function loadAll(){ const {data}=await GH.read(); state=data; }
+async function saveRecord(date,person,weight){
+  await commit(d=>{
+    d.records[date]=d.records[date]||{};
+    if(weight==null){ delete d.records[date][person]; if(!Object.keys(d.records[date]).length) delete d.records[date]; }
+    else d.records[date][person]=weight;
+  });
+}
+async function saveTarget(person,weight){
+  await commit(d=>{ d.targets=d.targets||{'甜富婆':null,'老舒':null}; d.targets[person]=weight; });
+}
+
+/* ============ 刷新 ============ */
+async function refresh(silent){
+  setSync('同步中…');
+  try{ await loadAll(); render(); setSync('☁️ 已同步 · '+nowTime()); }
+  catch(e){ setSync('❌ 同步失败：'+e.message,true); if(!silent) alert('加载失败：'+e.message+'\n\n请检查 GitHub 配置和 Token 权限。'); render(); }
+}
+
+/* ============ 输入 ============ */
+const $date=document.getElementById('inDate'),$pink=document.getElementById('inPink'),$blue=document.getElementById('inBlue');
+function initInputs(){
+  let t=todayIso(); if(t<PLAN_START)t=PLAN_START; if(t>PLAN_END)t=PLAN_END; $date.value=t;
+  const r=state.records[t]||{}; $pink.value=r['甜富婆']!=null?r['甜富婆']:''; $blue.value=r['老舒']!=null?r['老舒']:'';
+}
+document.getElementById('btnToday').onclick=()=>{ initInputs(); (who==='甜富婆'?$pink:$blue).focus(); };
+$date.addEventListener('change',()=>{ const r=state.records[$date.value]||{}; $pink.value=r['甜富婆']!=null?r['甜富婆']:''; $blue.value=r['老舒']!=null?r['老舒']:''; });
+document.getElementById('btnSave').onclick=async()=>{
+  const d=$date.value;
+  if(!d){alert('请选择日期');return;}
+  if(d<PLAN_START||d>PLAN_END){alert('日期需在 7月1日 ~ 10月31日 之间');return;}
+  const pv=parseFloat($pink.value), bv=parseFloat($blue.value);
+  if(isNaN(pv)&&isNaN(bv)){alert('至少填一个人的体重哦～');return;}
+  const btn=document.getElementById('btnSave'); btn.disabled=true; btn.textContent='保存中…';
+  try{
+    await saveRecord(d,'甜富婆',isNaN(pv)?null:pv);
+    await saveRecord(d,'老舒',isNaN(bv)?null:bv);
+    await refresh(true);
+    $pink.value=isNaN(pv)?'':pv; $blue.value=isNaN(bv)?'':bv;
+    (who==='甜富婆'?$pink:$blue).focus();
+  }catch(e){ alert('保存失败：'+e.message); }
+  btn.disabled=false; btn.textContent='💾 保存到云端';
+};
+
+/* ============ 表格 ============ */
+function editRow(d){
+  $date.value=d; const r=state.records[d]||{};
+  $pink.value=r['甜富婆']!=null?r['甜富婆']:''; $blue.value=r['老舒']!=null?r['老舒']:'';
+  window.scrollTo({top:0,behavior:'smooth'}); (who==='甜富婆'?$pink:$blue).focus();
+}
+async function delRow(d){
+  if(!confirm('删除 '+fmtDate(d)+' 的记录吗？'))return;
+  try{ await commit(data=>{ delete data.records[d]; }); await refresh(true); }catch(e){ alert('删除失败：'+e.message); }
+}
+function renderTable(){
+  const tb=document.getElementById('tbody');
+  const dates=Object.keys(state.records).filter(d=>state.records[d]['甜富婆']!=null||state.records[d]['老舒']!=null).sort();
+  if(!dates.length){ tb.innerHTML='<tr><td colspan="4" class="empty-row">还没有记录，去录入今日体重吧～</td></tr>'; return; }
+  tb.innerHTML=dates.slice().reverse().map(d=>{
+    const r=state.records[d], pv=r['甜富婆'], bv=r['老舒'];
+    return `<tr><td>${fmtDate(d)} <span style="color:#9ca3af;font-size:12px">(${d})</span></td>
+      <td class="${pv!=null?'num-pink':'num-empty'}">${pv!=null?pv.toFixed(1):'—'}</td>
+      <td class="${bv!=null?'num-blue':'num-empty'}">${bv!=null?bv.toFixed(1):'—'}</td>
+      <td><button class="btn-ghost btn-sm" onclick="editRow('${d}')">编辑</button> <button class="btn-danger btn-sm" onclick="delRow('${d}')">删除</button></td></tr>`;
+  }).join('');
+}
+
+/* ============ 统计 ============ */
+function firstLast(who){
+  const ds=Object.keys(state.records).filter(d=>state.records[d][who]!=null).sort();
+  if(!ds.length) return [null,null];
+  return [{date:ds[0],val:state.records[ds[0]][who]},{date:ds[ds.length-1],val:state.records[ds[ds.length-1]][who]}];
+}
+function renderStats(){
+  const today=todayIso();
+  const dayNo=clamp(daysBetween(PLAN_START,today)+1,1,TOTAL_DAYS);
+  document.getElementById('pillProgress').innerHTML = dayNo>=TOTAL_DAYS?'🎉 计划已完成！':`第 <b>${dayNo}</b> 天 · 剩余 <b>${TOTAL_DAYS-dayNo}</b> 天`;
+  [['pink','甜富婆'],['blue','老舒']].forEach(([cls,w])=>{
+    const[f,l]=firstLast(w); const tg=state.targets[w];
+    document.getElementById('s-'+cls+'-start').textContent=f?f.val.toFixed(1)+' 斤':'—';
+    document.getElementById('s-'+cls+'-now').textContent=l?l.val.toFixed(1)+' 斤':'—';
+    const dEl=document.getElementById('s-'+cls+'-delta');
+    if(f&&l){const dl=l.val-f.val; dEl.textContent=(dl>0?'+':'')+dl.toFixed(1)+' 斤'; dEl.className=dl<=0?'delta-down':'delta-up';} else dEl.textContent='—';
+    const bar=document.getElementById('bar-'+cls); let pct=0;
+    if(f&&tg&&tg<f.val) pct=clamp((f.val-l.val)/(f.val-tg),0,1);
+    bar.style.width=(pct*100).toFixed(1)+'%';
+  });
+}
+
+/* ============ 折线图 ============ */
+const svgNS='http://www.w3.org/2000/svg';
+function el(tag,attrs){const e=document.createElementNS(svgNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);return e;}
+const tooltip=document.getElementById('tooltip');
+function renderChart(){
+  const svg=document.getElementById('chart'); svg.innerHTML='';
+  const allDates=Object.keys(state.records).filter(d=>state.records[d]['甜富婆']!=null||state.records[d]['老舒']!=null).sort();
+  if(!allDates.length){
+    svg.setAttribute('viewBox','0 0 860 200');
+    const t=el('text',{x:430,y:100,'text-anchor':'middle',fill:'#9ca3af','font-size':15}); t.textContent='暂无数据，录入体重后这里会自动生成折线图 📉'; svg.appendChild(t); return;
+  }
+  const today=todayIso(); let xMax=today;
+  if(allDates[allDates.length-1]>xMax) xMax=allDates[allDates.length-1];
+  if(xMax>PLAN_END) xMax=PLAN_END;
+  const totalDays=Math.max(1,daysBetween(PLAN_START,xMax));
+  let vals=[];
+  allDates.forEach(d=>PEOPLE.forEach(w=>{if(state.records[d][w]!=null)vals.push(state.records[d][w]);}));
+  PEOPLE.forEach(w=>{if(state.targets[w])vals.push(state.targets[w]);});
+  let yMin=Math.floor(Math.min(...vals)-2), yMax=Math.ceil(Math.max(...vals)+2);
+  if(yMax-yMin<4){yMin-=2;yMax+=2;}
+  const W=860,H=400,padL=46,padR=22,padT=22,padB=42, plotW=W-padL-padR, plotH=H-padT-padB;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const xFor=d=>padL+(daysBetween(PLAN_START,d)/totalDays)*plotW;
+  const yFor=v=>padT+(1-(v-yMin)/(yMax-yMin))*plotH;
+  let step=1; const range=yMax-yMin; if(range>8)step=2; if(range>18)step=5;
+  for(let v=yMin;v<=yMax;v+=step){const y=yFor(v); svg.appendChild(el('line',{x1:padL,y1:y,x2:W-padR,y2:y,stroke:'#eef0f3','stroke-width':1})); const t=el('text',{x:padL-8,y:y+4,'text-anchor':'end',fill:'#9ca3af','font-size':11}); t.textContent=v; svg.appendChild(t);}
+  const startD=parseISO(PLAN_START);
+  for(let i=0;i<=totalDays;i+=7){const dd=iso(new Date(startD.getFullYear(),startD.getMonth(),startD.getDate()+i)); const x=xFor(dd); svg.appendChild(el('line',{x1:x,y1:padT,x2:x,y2:H-padB,stroke:'#f3f4f6','stroke-width':1})); const t=el('text',{x:x,y:H-padB+16,'text-anchor':'middle',fill:'#9ca3af','font-size':11}); t.textContent=fmtDate(dd); svg.appendChild(t);}
+  svg.appendChild(el('rect',{x:padL,y:padT,width:plotW,height:plotH,fill:'none',stroke:'#e5e7eb','stroke-width':1}));
+  PEOPLE.forEach(who2=>{const tg=state.targets[who2]; if(tg==null)return; const y=yFor(tg); svg.appendChild(el('line',{x1:padL,y1:y,x2:W-padR,y2:y,stroke:'#9ca3af','stroke-width':1.5,'stroke-dasharray':'5 4'}));});
+  PEOPLE.forEach(who2=>{
+    const pts=allDates.filter(d=>state.records[d][who2]!=null).map(d=>({d,v:state.records[d][who2]}));
+    if(!pts.length)return; const color=COLORS_HEX[who2];
+    svg.appendChild(el('polyline',{fill:'none',stroke:color,'stroke-width':2.5,'stroke-linejoin':'round','stroke-linecap':'round',points:pts.map(p=>`${xFor(p.d).toFixed(1)},${yFor(p.v).toFixed(1)}`).join(' ')}));
+    pts.forEach(p=>{
+      const cx=xFor(p.d),cy=yFor(p.v); const c=el('circle',{cx:cx,cy:cy,r:4,fill:'#fff',stroke:color,'stroke-width':2.5}); c.style.cursor='pointer';
+      c.addEventListener('mouseenter',()=>{tooltip.style.display='block'; tooltip.innerHTML=`<b>${who2}</b> · ${fmtDate(p.d)}<br>${p.v.toFixed(1)} 斤`;});
+      c.addEventListener('mousemove',e=>{tooltip.style.left=e.clientX+'px'; tooltip.style.top=e.clientY+'px';});
+      c.addEventListener('mouseleave',()=>tooltip.style.display='none');
+      svg.appendChild(c);
+    });
+  });
+}
+
+/* ============ 目标 / 备份 ============ */
+document.getElementById('btnSaveTarget').onclick=async()=>{
+  const p=parseFloat(document.getElementById('tgtPink').value), b=parseFloat(document.getElementById('tgtBlue').value);
+  const btn=document.getElementById('btnSaveTarget'); btn.disabled=true;
+  try{ await saveTarget('甜富婆',isNaN(p)?null:p); await saveTarget('老舒',isNaN(b)?null:b); await refresh(true); alert('目标已保存 ✓'); }
+  catch(e){ alert('保存失败：'+e.message); }
+  btn.disabled=false;
+};
+document.getElementById('btnExport').onclick=()=>{
+  const out={records:{},targets:state.targets,_exportedAt:todayIso()};
+  Object.keys(state.records).forEach(d=>{const r=state.records[d]; out.records[d]={}; if(r['甜富婆']!=null)out.records[d]['甜富婆']=r['甜富婆']; if(r['老舒']!=null)out.records[d]['老舒']=r['老舒'];});
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='减肥体重备份_'+todayIso()+'.json'; a.click(); URL.revokeObjectURL(a.href);
+};
+document.getElementById('btnWipe').onclick=async()=>{
+  if(!confirm('⚠️ 这会清空云端(data.json)所有体重和目标记录，两人都会受影响！确定吗？'))return;
+  if(!confirm('再次确认：真的全部删除？建议先导出备份。'))return;
+  try{ await commit(d=>{ d.records={}; d.targets={'甜富婆':null,'老舒':null}; }); await refresh(true); alert('已清空云端数据'); }
+  catch(e){ alert('清空失败：'+e.message); }
+};
+
+/* ============ 总渲染 ============ */
+function render(){
+  document.getElementById('tgtPink').value=state.targets['甜富婆']??'';
+  document.getElementById('tgtBlue').value=state.targets['老舒']??'';
+  renderStats(); renderTable(); renderChart();
+}
+
+/* ============ 启动 ============ */
+async function boot(){
+  const c=getCfg();
+  if(!c.owner||!c.repo||!c.token){ openCfg(); return; }   // 没配置 → 弹配置
+  who=getWho();
+  if(!who){ document.getElementById('whoMask').style.display='flex'; return; } // 没身份 → 选身份
+  applyWho(who); initInputs();
+  await refresh(false);
+  setInterval(()=>refresh(true),60000); // 每60秒自动同步
+}
+boot();
+</script>
+</body>
+</html>
