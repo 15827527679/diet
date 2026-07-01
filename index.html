@@ -276,7 +276,7 @@
       <div class="field pink">
         <label>💖 甜富婆目标</label>
         <div class="input-wrap">
-          <input type="number" id="tgtPink" step="0.1" min="20" max="600" placeholder="目标体重" inputmode="decimal">
+          <input type="number" id="inTgtPink" step="0.1" min="20" max="600" placeholder="目标体重" inputmode="decimal">
           <button type="button" class="unit-btn" id="unitTgtPink" onclick="cycleUnit('TgtPink')">自动</button>
         </div>
         <div class="unit-hint" id="hintTgtPink">输入数字自动识别 kg / 斤</div>
@@ -284,7 +284,7 @@
       <div class="field blue">
         <label>💙 老舒目标</label>
         <div class="input-wrap">
-          <input type="number" id="tgtBlue" step="0.1" min="20" max="600" placeholder="目标体重" inputmode="decimal">
+          <input type="number" id="inTgtBlue" step="0.1" min="20" max="600" placeholder="目标体重" inputmode="decimal">
           <button type="button" class="unit-btn" id="unitTgtBlue" onclick="cycleUnit('TgtBlue')">自动</button>
         </div>
         <div class="unit-hint" id="hintTgtBlue">输入数字自动识别 kg / 斤</div>
@@ -441,7 +441,7 @@ async function saveTarget(person,weight){await commit(d=>{d.targets=d.targets||{
 async function refresh(silent){
   setSync('同步中…');
   try{await loadAll();render();setSync('☁️ 已同步 · '+nowTime());}
-  catch(e){setSync('❌ 同步失败：'+e.message,true);if(!silent)alert('加载失败：'+e.message+'\n\n请检查 GitHub 配置和 Token 权限。');render();}
+  catch(e){setSync('❌ 同步失败：'+e.message,true);if(!silent)alert('加载失败：'+e.message+'\n\n常见原因：①Token 无权限(401/403) ②用户名/仓库名/分支填错(404) ③网络不通(Failed to fetch)。看不懂可把这段发我。');render();}
 }
 
 /* ============ 输入 + 单位识别 ============ */
@@ -636,8 +636,8 @@ document.getElementById('btnWipe').onclick=async()=>{
 
 /* ============ 总渲染 ============ */
 function render(){
-  document.getElementById('tgtPink').value=state.targets['甜富婆']??'';
-  document.getElementById('tgtBlue').value=state.targets['老舒']??'';
+  document.getElementById('inTgtPink').value=state.targets['甜富婆']??'';
+  document.getElementById('inTgtBlue').value=state.targets['老舒']??'';
   // 已存目标用「斤」模式展示
   unitMode.TgtPink=state.targets['甜富婆']!=null?'斤':'auto';
   unitMode.TgtBlue=state.targets['老舒']!=null?'斤':'auto';
